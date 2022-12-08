@@ -53,21 +53,30 @@ async def root():
 
 @app.post("/predict")
 async def predict(text: Text):
-    tokenized_text = tokenizer.tokenize(text.text)
-    sent = ['[CLS]'] + tokenized_text + ['[SEP]']
-    input_ids = tokenizer.convert_tokens_to_ids(sent)
+    text = text.text.split("\n")
+    tokenized_texts = [tokenizer.tokenize(t) for t in text]
+    tokenized_texts = [sent[:max_length] for sent in tokenized_texts]
+    for i in range(len(tokenized_texts)):
+        sent = tokenized_texts[i]
+        sent = ['[CLS]'] + sent + ['[SEP]']
+        tokenized_texts[i] = sent
+    input_ids = [tokenizer.convert_tokens_to_ids(com) for com in tokenized_texts]
     #Pad our tokens which might be less than max_length size
-    input_ids = pad_sequences([input_ids], maxlen=max_length+2, truncating='post', padding='post')
-    atten_mask = [float(i > 0) for i in input_ids[0]]
-    x = {'input_ids': np.array([input_ids[0]]), 'attention_mask': np.array([atten_mask])}
-    mild = model.predict(x)[0][0][0]
-    wild = model.predict(x)[0][0][1]
-    if mild > wild:
-        res = 1
-    else:
-        res = 0
-    print(mild, wild)
-    return {"result": res}
+    input_ids = pad_sequences(input_ids, maxlen=max_length+2, truncating='post', padding='post')
+    attn_masks = []
+    for seq in input_ids:
+        seq_mask = [float(i>0) for i in seq]
+        attn_masks.append(seq_mask)
+    x = {'input_ids': np.array(input_ids), 'attention_mask': np.array(attn_masks)}
+    res = model.predict(x)
+    res = res[0]
+    toxic = []
+    for i in range(res.shape[0]):
+        if res[i, 0] > res[i, 1]:
+            toxic.append(1)
+        else:
+            toxic.append(0)
+    return {"result": toxic}
 
 
 
