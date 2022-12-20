@@ -45,15 +45,6 @@ function App() {
     }
   };
 
-  // const showAlert = () => {
-  //   if (isToxic === -1) {
-  //     return <></>;
-  //   } else if (isToxic === 1) {
-  //     return <Alert severity="success">This is a friendly sentence : ）</Alert>;
-  //   } else if (isToxic === 0) {
-  //     return <Alert severity="error">This is not a polite sentence ：（</Alert>;
-  //   }
-  // };
 
   return (
     <div className="App">
@@ -62,7 +53,7 @@ function App() {
       {isShowResult ? (
         <>
           {sents?.map((s, i) => (
-            <Alert sx={{width: "50ch", marginBottom: "5px"}} key={i} severity={isToxic[i] === 1 ? "success" : "waring"}>
+            <Alert sx={{width: "50ch", marginBottom: "5px"}} key={i} severity={isToxic[i] === 1 ? "success" : "warning"}>
               {" "}
               {s}{" "}
             </Alert>
